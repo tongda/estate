@@ -9,6 +9,7 @@ GEM
     multi_json (1.10.1)
     nokogiri (1.6.3.1)
       mini_portile (= 0.6.0)
+    redis (3.1.0)
     ruby-ole (1.2.11.7)
     rubyzip (1.1.6)
     selenium-webdriver (2.43.0)
@@ -30,5 +31,6 @@ PLATFORMS
 
 DEPENDENCIES
   nokogiri
+  redis
   spreadsheet
   watir
