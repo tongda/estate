@@ -1,4 +1,5 @@
 require 'nokogiri'
+require 'spreadsheet'
 
 # File.open('output.csv','w') do |out|
 #   File.open('test.html', 'r:UTF-8') do |file|
@@ -10,15 +11,24 @@ require 'nokogiri'
 #   end
 # end
 
-File.open('output.csv','w') do |out|
-  File.open('page.html', 'r:utf-8') do |page|
-    doc = Nokogiri::HTML(page)
+Spreadsheet.client_encoding = 'UTF-8'
+
+book = Spreadsheet::Workbook.new
+Dir.glob('pages/*.html').each do |fn|
+  sheet = book.create_worksheet :name => fn[7..-6]
+  File.open(fn, 'r:utf-8') do |page|
+    puts "processing #{fn}"
+    doc = Nokogiri::HTML(page, nil, 'utf-8')
+
+    doc.css("#MyTable_tableLayout thead tr th")[0..21].each do |th|
+      sheet.row(0).push th.text
+    end
     doc.css("#MyTable_tableLayout tbody > tr").each do |row|
-      items = []
+      idx = sheet.last_row_index + 1
       row.css("td").each do |item|
-        items.push item
+        sheet.row(idx).push item.text
       end
-      out.puts(items.join(','))
     end
   end
 end
+book.write('cities.xls')
