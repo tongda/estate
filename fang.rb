@@ -4,7 +4,7 @@ require 'spreadsheet'
 
 browser = Watir::Browser.new
 
-browser.goto "http://newhouse.cd.fang.com/house/s/"
+# browser.goto "http://newhouse.cd.fang.com/house/s/"
 book = Spreadsheet::Workbook.new
 sheet  = book.create_worksheet :name => 'cd'
 
@@ -25,25 +25,29 @@ end
 
 def parse_page(browser, link, sheet)
   browser.goto link
-  browser.div(:class => 'firstright').when_present do |firstright|
-    sheet.row(sheet.last_row_index + 1).push(
-      browser.div(:class => 'sftitle').h1.text,
-      firstright.div(:class => 'information_li').div(:class => 'inf_left').text,
-      firstright.divs(:class => 'information_li')[1].text,
-      firstright.divs(:class => 'information_li')[4].text,
-      )
-    puts "#{browser.div(:class => 'sftitle').h1.text} - #{firstright.div(:class => 'information_li').div(:class => 'inf_left').text}"
+  begin
+    browser.div(:class => 'firstright').when_present do |firstright|
+      sheet.row(sheet.last_row_index + 1).push(
+        browser.div(:class => 'sftitle').h1.text,
+        firstright.div(:class => 'information_li').div(:class => 'inf_left').text,
+        firstright.divs(:class => 'information_li')[1].text,
+        firstright.divs(:class => 'information_li')[4].text,
+        )
+      puts "#{browser.div(:class => 'sftitle').h1.text} - #{firstright.div(:class => 'information_li').div(:class => 'inf_left').text}"
+    end
+  rescue Exception => e
+    puts "#{link} - #{e}"
   end
 end
 
-parse_links(browser)
+# parse_links(browser)
 
-redis = Redis.new
+redis = Redis.new :host => '119.254.110.254'
 begin
   redis.smembers(:fang_links_cd).each do |link|
     parse_page(browser, link, sheet)
   end
-rescue
-  puts "something went wrong"
+rescue Exception => e
+  puts e
 end
 book.write "temp.xls"
